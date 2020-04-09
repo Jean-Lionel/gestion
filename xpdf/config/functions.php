@@ -369,7 +369,7 @@ function calcule_avances($matricule, $periode){
    $q = "
    SELECT SUM(montant_Moi) as montant_moi
    FROM avances
-    `avances` WHERE `date_fin` >= '".$dateActuel."' AND `date_avance`<='".$dateActuel."' AND matricule = ".$matricule;
+    `avances` WHERE `date_fin` >= '".$dateActuel."' AND `date_avance` <= '".$dateActuel."' AND matricule = ".$matricule;
 
    $result = $db->query($q);
    $montant_avance = $result->fetch();
@@ -732,6 +732,50 @@ function get_retenu_avances($matricule , $periode){
 
 }
 
+// function totalAutreRetenu($matricule,$periode){
+//      $retenues_epargnes = get_retenu_epargnes($matricule,$periode);
+//         $retenues_credits = get_retenu_credits($matricule,$periode);
+//         $retenues_avances = get_retenu_avances($matricule, $periode);
+//         $retenues_assurances = get_retenu_assurances($matricule, $periode);
+
+//         affiche($retenues_epargnes);
+//         affiche("====================================================");
+//         affiche($retenues_avances);
+//         affiche("====================================================");
+//         affiche($retenues_assurances);
+//         affiche("====================================================");
+//         affiche($retenues_assurances);
+//         affiche("====================================================");
+
+
+// }
+
+function get_autre_retenu_total($matricule,$periode){
+
+    $total = 0;
+    $retenues_epargnes = get_retenu_epargnes($matricule,$periode);
+    $retenues_credits = get_retenu_credits($matricule,$periode);
+    $retenues_avances = get_retenu_avances($matricule, $periode);
+    $retenues_assurances = get_retenu_assurances($matricule, $periode);
+
+
+
+    if($retenues_epargnes)
+        $total += floatval($retenues_epargnes[0]['montant_total']);
+
+    if($retenues_credits)
+        $total += floatval($retenues_credits[0]['montant_total']);
+
+    if($retenues_avances)
+        $total += floatval($retenues_avances[0]['montant_total']);
+
+    if($retenues_assurances)
+        $total += floatval($retenues_assurances[0]['montant_total']);
+
+
+     return $total;
+}
+
 
 function get_file_autre_retenues($employes){
 
@@ -752,6 +796,13 @@ function get_file_autre_retenues($employes){
         $retenues_credits = get_retenu_credits($matricule,$periode);
         $retenues_avances = get_retenu_avances($matricule, $periode);
         $retenues_assurances = get_retenu_assurances($matricule, $periode);
+
+       
+        // affiche('total credit '.$retenues_credits[0]['montant_total']);
+        // affiche('total avance ' .$retenues_avances[0]['montant_total']);
+        // affiche('total assurance '.$retenues_assurances[0]['montant_total']);
+
+       
 
 
         if(!empty($retenues_epargnes)){
@@ -925,6 +976,12 @@ function checkValue($value,$key='kcb'){
     }else{
         return false;
     }
+}
+
+function getCompteNumber($str){
+    preg_match('/(\d+)/', $str, $matches);
+
+    return $matches[0];
 }
 
 function iness_trimestrielle($periode){

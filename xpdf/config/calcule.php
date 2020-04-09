@@ -175,15 +175,19 @@ foreach ($employes as $key => $employe) {
 
     //Autre retenu
     //total_autre_retenu = total_epargne + total_avance + total_credit + total_assurance
-    
+    $autres_retenus = get_autre_retenue_employes($matricule,$periode);
 
-    $total_autre_retenu = calcule_epargne($matricule,$periode) + calcule_avances($matricule, $periode) + calcule_credit($matricule,$periode) + calcul_assurance($matricule,$periode);
+    //$total_autre_retenu = get_autre_retenu_total($matricule,$periode);
 
-    $employes[$key]['total_autre_retenu'] = $total_autre_retenu;
+    $employes[$key]['total_autre_retenu'] = 
+    count_sum_colonne_table($autres_retenus,'montant') + calcule_epargne($matricule, $periode) 
+    + calcul_assurance($matricule, $periode);
+
+
 
     //total_retenu = retenu(ipr + pension_employe + mutuel_employer) + retenu_autre_retenu
     
-    $total_retenu =  $ipr + $pension_employe + $mituelEmploye + $total_autre_retenu;
+    $total_retenu =  $ipr + $pension_employe + $mituelEmploye + $employes[$key]['total_autre_retenu'];
 
     $employes[$key]['total_retenu'] = $total_retenu;
 

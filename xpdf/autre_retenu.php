@@ -2,15 +2,25 @@
 require_once('./config/getDate.php');
 
 require_once('./config/calcule.php');
-
-
-
-
-//affiche(checkValue('je suis au KCB'));
-
-
 $result = get_file_autre_retenues($employes);
+
+
 $autres_retenues = order_table_by_key($result,'variable_name');
+
+//Les personnes qui ont les detes dans kcb
+
+$kecb_employes = [];
+
+
+foreach ($autres_retenues as $key => $value) {
+
+	if(checkValue($value[0]['variable_name'])){
+		$value['compte'] = getCompteNumber($value[0]['variable_name']);
+
+		$kecb_employes[] = $value;
+	}
+}
+
 
 
 
@@ -93,7 +103,7 @@ ob_start();
 
 
 			
-		<table style="width: 100%; padding-top: 50px;">
+		<table style="width: 100%; padding-top: 50px; ">
 
 			<tr>
 				<td style="width: 70%;">
@@ -121,6 +131,7 @@ ob_start();
 <?php endif;?>
 
 <?php endforeach;?>
+
 
 
 
