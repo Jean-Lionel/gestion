@@ -121,10 +121,10 @@ class EmployesTable extends Table
             ->maxLength('etatCivil', 255)
             ->requirePresence('etatCivil', 'create')
             ->notEmptyString('etatCivil');
-        $validator
-            ->integer('conjointFonction')
-            ->requirePresence('conjointFonction', 'create')
-            ->notEmptyString('conjointFonction');
+        // $validator
+        //     ->integer('conjointFonction')
+        //     ->requirePresence('conjointFonction', 'create')
+        //     ->notEmptyString('conjointFonction');
 
        /* $validator
             ->scalar('telephone')
@@ -138,10 +138,10 @@ class EmployesTable extends Table
         */
             
 
-        $validator
-            ->integer('nombreEnfant')
-            ->requirePresence('nombreEnfant', 'create')
-            ->notEmptyString('nombreEnfant');
+        // $validator
+        //     ->integer('nombreEnfant');
+            // ->requirePresence('nombreEnfant', 'create')
+            // ->notEmptyString('nombreEnfant');
 
         $validator
             ->numeric('salaireBase')

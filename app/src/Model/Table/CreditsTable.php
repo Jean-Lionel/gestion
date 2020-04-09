@@ -98,10 +98,10 @@ class CreditsTable extends Table
             ->requirePresence('date_credit', 'create')
             ->notEmptyDate('date_credit');
 
-        $validator
-            ->date('date_fin')
-            ->requirePresence('date_fin', 'create')
-            ->notEmptyDate('date_fin');
+        // $validator
+        //     ->date('date_fin')
+        //     ->requirePresence('date_fin', 'create')
+        //     ->notEmptyDate('date_fin');
 
         return $validator;
     }

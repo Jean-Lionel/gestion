@@ -65,18 +65,6 @@ class AssurancesTable extends Table
             ->allowEmptyString('id', null, 'create');
 
         $validator
-            ->scalar('name')
-            ->maxLength('name', 255)
-            ->requirePresence('name', 'create')
-            ->notEmptyString('name');
-
-        $validator
-            ->scalar('compte')
-            ->maxLength('compte', 255)
-            ->requirePresence('compte', 'create')
-            ->notEmptyString('compte');
-
-        $validator
             ->integer('matricule')
             ->requirePresence('matricule', 'create')
             ->notEmptyString('matricule');

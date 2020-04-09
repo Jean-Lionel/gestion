@@ -15,13 +15,19 @@
     </ul>
 </nav>
 <div class="assurances index large-10 medium-10 columns content">
-    <h3><?= __('Assurances') ?></h3>
+    <div class="medium-6 columns">
+        <h3><?= __('Liste des Assurances') ?></h3>
+    </div>
+    <div class="medium-6 columns">
+        <?= $this->Form->control('search',['label'=>false,'placeholder'=>'Entre le numero matricule']) ?>
+    </div>
+    <div class="table_content">
     <table cellpadding="0" cellspacing="0" class="table table-responsive">
         <thead>
             <tr>
-                <th scope="col"><?= $this->Paginator->sort('id') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('id','No') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('variable_id') ?></th>
-              
+
                 <th scope="col"><?= $this->Paginator->sort('matricule') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('montant') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('periode') ?></th>
@@ -55,4 +61,36 @@
         </ul>
         <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
     </div>
+    </div>
 </div>
+
+
+<script>
+    $('document').ready(function () {
+        $('#search').keyup(function () {
+            let searchKey = $(this).val();
+
+            searchValue(searchKey);
+        })
+
+        function searchValue(searchKey) {
+            $.ajax({
+                url: "<?php echo $this->Url->build(['controller'=>'Assurances','action'=>'search']) ?>",
+                type: 'GET',
+                data: {searchKey: searchKey},
+            })
+                .done(function(response) {
+                    $('.table_content').html(response);
+                })
+                .fail(function() {
+                    console.log("error");
+                })
+                .always(function() {
+                    console.log("complete");
+                });
+
+        }
+
+
+    })
+</script>

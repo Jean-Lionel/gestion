@@ -21,19 +21,40 @@
 <div class="avances form large-9 medium-8 columns content">
     <?= $this->Form->create($avance) ?>
     <fieldset>
-        <legend><?= __('Edit Avance') ?></legend>
-        <?php
+        <legend class="text-center"><?= __('Modifier une Avance') ?></legend>
+
+        <div class="columns medium-6">
+            <?php
             echo $this->Form->control('matricule');
-            echo $this->Form->control('compte');
-            echo $this->Form->control('variable_id', ['options' => $variables]);
+            echo $this->Form->control('id');
+             echo $this->Form->control('montant');
+             echo $this->Form->control('date_avance');
+            ?>
+            
+        </div>
+
+        <div class="columns medium-6">
+
+            <?php
+
+             echo $this->Form->control('periode',['placeholder'=>'Entre le nombre mois ']);
+
+              echo $this->Form->control('variable_id', ['options' => $variables]);
+
+            ?>
+            
+        </div>
+        
+
+          <!--  
             echo $this->Form->control('montant_moi');
             echo $this->Form->control('montant_restant');
-            echo $this->Form->control('montant');
-            echo $this->Form->control('periode');
-            echo $this->Form->control('date_avance');
+           
+           
+            
             echo $this->Form->control('date_fin');
-        ?>
+        ?> -->
     </fieldset>
-    <?= $this->Form->button(__('Submit')) ?>
+    <?= $this->Form->button(__('Modifier')) ?>
     <?= $this->Form->end() ?>
 </div>

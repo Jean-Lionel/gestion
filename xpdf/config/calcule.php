@@ -1,27 +1,30 @@
 <?php
-
 require_once 'database.php';
 require_once 'functions.php';
 
-$db = connexion();
 
-$employesData = $db->query('SELECT * FROM employes WHERE etat = 1 ORDER BY matricule');
+$employes = getEmployesData($periodeGet);
+// indeminite_logement =Indeminité de logement=ind_log=(salaire de base*50)/100
 
-$employes = [];
+// affiche($employes[0]);
+// die();
 
-while ($employe = $employesData->fetch()) {
-    $employes[] = $employe;
+if($employes == null){
+    echo "<b>Erreur nous n' avons pas les données de   " . $periodeGet['mois'] .
+    '  / '. $periodeGet['annee'].'</b>';
+
+    die();
 }
 
-$employesData->closeCursor();
-
-// indeminite_logement =Indeminité de logement=ind_log=(salaire de base*50)/100
+// savehistory($employes);
+// die();
 
 foreach ($employes as $key => $employe) {
     $matricule = $employe['matricule'];
 
-    $periode =['annee'=>date('Y'),'mois'=>date('m')];
-
+    $periode = $periodeGet;
+    //initialisation de la periode
+    $employes[$key]['periode'] = $periode;
 
     $indeminite_logement = ($employe['salaireBase'] * 50) / 100;
     $ind_deplacement = 0;
@@ -68,6 +71,9 @@ foreach ($employes as $key => $employe) {
 
     $brut1 = $employe['salaireBase'] + $indeminite_logement + $employes[$key]['ind_deplacement'] + $employes[$key]['all_familial'] + $nomFonction['prime'];
 
+
+    $brutAJustement = $employe['salaireBase'] + $indeminite_logement + $employes[$key]['ind_deplacement'] + $employes[$key]['all_familial'];
+
     /**
      * Indeminite d'ajustement
      * Depend de salaire brut1
@@ -84,7 +90,7 @@ foreach ($employes as $key => $employe) {
     
     $employes[$key]['date_embauche'] = $dateEmbauche[0];
     $employes[$key]['ancienete'] =  $anciente;
-    $employes[$key]['salaire_brut_sans_ajustement'] =  $brut1;
+    $employes[$key]['salaire_brut_sans_ajustement'] =  $brutAJustement;
     //recuperation de
     $enciente_id = getEncientete_id($anciente);
 
@@ -92,12 +98,12 @@ foreach ($employes as $key => $employe) {
     //calculer indeminites ajustementd
     //octoyerAJustement($ajustement, $brut1);
     
-    $ind_ajustement = octoyerAJustement($ajustement, $brut1,$matricule);
+    $ind_ajustement = octoyerAJustement($ajustement, $brutAJustement ,$matricule);
 
     //Salaire brut de chaque employe
     $salaire_brut = $brut1 + $ind_ajustement;
 
-    $employes[$key]['salaire_brut_sans_ajustement'] = $brut1;
+    $employes[$key]['salaire_brut_sans_ajustement'] = $brutAJustement;
 
     $employes[$key]['brut1'] = $salaire_brut;
 
@@ -114,8 +120,12 @@ foreach ($employes as $key => $employe) {
     $pension_employe = 0;
     if ($brut1 < 450000) {
         $pension_employe = ($brut1 - $all_familial) * 4 / 100;
+        //La base de pension de l'employe dont la salaire inferieur 
+        $employes[$key]['base_pension_employe'] = $brut1 - $all_familial;
     } else {
         $pension_employe = (450000 * 4) / 100;
+         //La base de pension de l'employe dont la salaire inferieur 
+        $employes[$key]['base_pension_employe'] = 450000;
     }
 
     $employes[$key]['pension_employe'] = $pension_employe;
@@ -131,9 +141,19 @@ foreach ($employes as $key => $employe) {
    // $pension_employeur = ($brut1 - $all_familial) * 6 / 100;
    
 
-   $innss_employeur = inssChezEmployeur($brut1, $all_familial);
+   $innss_employeur_Data = inssChezEmployeur($brut1, $all_familial);
 
-    $employes[$key]['pension_employeur'] =  $innss_employeur ;
+   $innss_employeur = $innss_employeur_Data['inessEmployeur'];
+
+    $employes[$key]['pension_employeur'] =  $innss_employeur;
+    //Les autres clefs 
+    $employes[$key]['base__risque_employeur'] =  $innss_employeur_Data['base__risque_employeur'];
+    $employes[$key]['inss_employe'] =  $innss_employeur_Data['inss_employe'];
+    $employes[$key]['montant_risque'] =  $innss_employeur_Data['montant_risque'];
+    //$employes[$key]['montant_risque'] =  $innss_employeur['montant_risque'];
+
+
+
 
     //Base IPR 
     
@@ -189,7 +209,19 @@ foreach ($employes as $key => $employe) {
 
    $categorieData = nameForTable_id($employe['category_id'],'categories');
    $employes[$key]['category_name'] = $categorieData['name'];
+
+
+//Recherche des retenues de chaque employes 
+
+
+    $employes[$key]['base_mituel'] = $employe['salaireBase'] + $ind_deplacement + $nomFonction['prime'] ;
+
+
+
+
 }
+
+
 //array_keys($employes)
 
 
@@ -219,4 +251,13 @@ $total_total_retenu =  count_sum_colonne_table($employes, 'total_retenu');
 $total_net_a_payer =  count_sum_colonne_table($employes, 'net_a_payer');
 $total_pension_employeur =  count_sum_colonne_table($employes, 'pension_employeur');
 $total_mituel_employeur_Patronal =  count_sum_colonne_table($employes, 'mituel_employeur_Patronal');
-$total_total_depenses =  count_sum_colonne_table($employes, 'total_depenses');
+
+
+
+$total_total_depenses  = round($total_pension_employe) + round($total_mutuel_employe)+
+ round($total_ipr)+
+    round($total_total_autre_retenu) + round($total_net_a_payer)+
+                        round($total_pension_employeur) + round($total_mituel_employeur_Patronal);
+
+
+//$total_total_depenses =  count_sum_colonne_table($employes, 'total_depenses');

@@ -1,3 +1,5 @@
+
+
 <?php
 /**
 * @var \App\View\AppView $this
@@ -28,7 +30,7 @@
         <table cellpadding="0" cellspacing="0">
             <thead>
                 <tr>
-                    <th scope="col"><?= $this->Paginator->sort('id') ?></th>
+                    <th scope="col"><?= $this->Paginator->sort('id','No') ?></th>
                     <th scope="col"><?= $this->Paginator->sort('name') ?></th>
                     <th scope="col" class="actions"><?= __('Actions') ?></th>
                 </tr>
@@ -66,12 +68,12 @@
     $('document').ready(function(){
 
         $("#search").keyup(function(){
-            let $searchKey = $(this).val()
-            searchValue($searchKey);
+            let searchKey = $(this).val()
+            searchValue(searchKey);
         });
 
-    function searchValue($searchKey){
-            let data = $searchKey;
+    function searchValue(searchKey){
+            let data = searchKey;
             $.ajax({
                 url:
                 "<?php echo $this->Url->build(['controller'=>'Banques','action'=>'search']); ?>",

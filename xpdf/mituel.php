@@ -1,5 +1,5 @@
 <?php 
-
+require_once('./config/getDate.php');
 require_once('./config/calcule.php');
 
 
@@ -58,9 +58,9 @@ ob_start();
 
 <?php require("include/footer.php"); ?>
 
-<?php require("include/header.php");?>
+<?php require("include/header_portrait.php");?>
 
-<h4 style="text-align: center;"><u>Declaration Mutuelle : Mois de <?= date('m / Y') ?> </u></h4>
+<h4 style="text-align: center;"><u>DECLARATION  MUTUELLE : MOIS DE <?= $employes[0]['periode']['mois'] . '/'. $employes[0]['periode']['annee']?> </u></h4>
 <table class="main-table" center>
     <thead>
       <tr>
@@ -102,10 +102,10 @@ ob_start();
 
  	<td><?= $employe['matricule']; ?></td>
  	<td><?= $employe['nom'].' '.$employe['prenom']; ?></td>
- 	<td><?= $employe['base']; ?></td>
- 	<td><?= $employe['mutuel_employe']; ?></td>
- 	<td><?= $employe['mituel_employeur_Patronal']; ?></td>
- 	<td><?= $employe['montant']; ?></td>
+ 	<td><?= afficheNombre($employe['base']); ?></td>
+ 	<td><?= afficheNombre($employe['mutuel_employe']); ?></td>
+ 	<td><?= afficheNombre($employe['mituel_employeur_Patronal']); ?></td>
+ 	<td><?= afficheNombre($employe['montant']); ?></td>
  </tr>
       
 
@@ -114,15 +114,38 @@ ob_start();
 
 <tr>
 	<td colspan="3">Total</td>
-	<td><?= count_sum_colonne_table($employes,'base')?></td>
-	<td><?= count_sum_colonne_table($employes,'mutuel_employe')?></td>
-	<td><?= count_sum_colonne_table($employes,'mituel_employeur_Patronal')?></td>
-	<td><?= count_sum_colonne_table($employes,'montant')?></td>
+	<td><?= afficheNombre( count_sum_colonne_table($employes,'base'))?></td>
+	<td><?=afficheNombre(count_sum_colonne_table($employes,'mutuel_employe'))?></td>
+	<td><?= afficheNombre(count_sum_colonne_table($employes,'mituel_employeur_Patronal'))?></td>
+	<td><?=afficheNombre(count_sum_colonne_table($employes,'montant'))?></td>
 </tr>
 
 
 </tbody>
 </table>
+
+
+<table class="footer-info" style="width: 100%">
+
+    <tr>
+      <td style="width: 45%">
+
+        <p>LE DIRECTEUR ADMINISTRATIF ET FINANCIER</p>
+        <p>MANIRAKIZA Francine</p>
+        
+      </td>
+
+      <td style="width: 15%">
+        
+      </td>
+
+      <td style="width: 40%; ">
+        <p style="text-align: right;">LE DIRECTEUR GENERAL</p>
+        <p style="text-align: right;">Ir Apollinaire SINDIHEBURA </p>
+      </td>
+    </tr>
+    
+  </table>
 
 </page>
 

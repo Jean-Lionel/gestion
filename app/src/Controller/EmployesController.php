@@ -25,6 +25,8 @@ class EmployesController extends AppController
 
         if(!empty($keyWord)){
             if( $champ == 'matricule'){
+              $keyWord = intVal($keyWord);
+
                 $this->paginate = [
                     'conditions' => ['matricule' => $keyWord],
                 ];
@@ -162,5 +164,18 @@ class EmployesController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+
+    public function bullettin(){
+
+      $employes = $this->paginate($this->Employes,[
+
+        'conditions' => ['etat'=>1]
+      ]);
+
+
+      $this->set(compact('employes'));
+
     }
 }

@@ -15,6 +15,105 @@ function affiche($value = null)
     echo '</pre>';
 }
 
+//Recuperation des donnees selon le mois
+
+function getEmployesData($periode = null){
+
+    $currentDate =['annee'=>date('Y'),'mois'=>date('m')];
+    
+    if($periode == $currentDate){
+         $db = connexion();
+        $employesData = $db->query('SELECT * FROM employes WHERE etat = 1 ORDER BY matricule');
+        $employes = [];
+        while ($employe = $employesData->fetch()) {
+            $employes[] = $employe;
+        }
+
+        $employesData->closeCursor();
+
+        $check = 'SELECT  IF(count(*)>1 , 0, 1)as val FROM `employes_history` WHERE MONTH(`created`)= '.$periode['mois'] .' AND YEAR(created) = '.$periode['annee'];
+        $db = connexion();
+        $result = $db->query($check);
+        $result_get = $result->fetch();
+        
+        if($result_get['val']){
+            //Enregistrement de l'historique c la premiere fois 
+            savehistory($employes);
+        }
+        return  $employes;
+    }else if($periode > $currentDate){
+        return null;
+    }else{
+
+        //Les donnes enciens 
+
+        $db = connexion();
+
+        $query = 'SELECT * FROM 
+        employes_history 
+        WHERE etat = 1 AND MONTH(created)='.$periode['mois'].' AND 
+        YEAR(created)='.$periode['annee'].' ORDER BY matricule';
+
+        $employesData = $db->query($query);
+        $employes = [];
+        while ($employe = $employesData->fetch()) {
+            $employes[] = $employe;
+        }
+
+        $employesData->closeCursor();
+        return  $employes;
+
+    }
+
+}
+
+//Enregistrement de l'historique
+
+function savehistory(array $employes){
+    $query = "INSERT INTO `employes_history`(`matricule`, `nom`, `prenom`, `dateNaissance`, `sexe`, `etatCivil`, `level_id`, `conjointFonction`, `telephone`, `email`, `nombreEnfant`, `salaireBase`, `agence_id`, `fonction_id`, `service_id`, `category_id`, `banque_id`, `compte`, `dateEmbauche`, `modified`) VALUES (
+    :matricule,:nom,:prenom,:dateNaissance,:sexe,:etatCivil,:level_id,:conjointFonction,:telephone,:email,:nombreEnfant,:salaireBase,:agence_id,:fonction_id,:service_id,
+    :category_id,:banque_id,:compte,:dateEmbauche,:modified
+
+    )";
+     
+
+    foreach ($employes as $key => $employe) {
+        $db = connexion();
+       $req =  $db->prepare($query);
+
+        $reussi = $req->execute([
+        ':matricule'=> $employe['matricule'],
+        ':nom'=> $employe['nom'],
+        ':prenom'=> $employe['prenom'],
+        ':dateNaissance'=> $employe['dateNaissance'],
+        ':sexe'=> $employe['sexe'],
+        ':etatCivil'=> $employe['etatCivil'],
+        ':level_id'=> $employe['level_id'],
+        ':conjointFonction'=> $employe['conjointFonction'],
+        ':telephone'=> $employe['telephone'],
+        ':email'=> $employe['email'],
+        ':nombreEnfant'=> $employe['nombreEnfant'],
+        ':salaireBase'=> $employe['salaireBase'],
+        ':agence_id'=> $employe['agence_id'],
+        ':fonction_id'=> $employe['fonction_id'],
+        ':service_id'=> $employe['service_id'],
+        ':category_id'=> $employe['category_id'],
+        ':banque_id'=> $employe['banque_id'],
+        ':compte'=> $employe['compte'],
+        ':dateEmbauche'=> $employe['dateEmbauche'],
+        ':modified'=> $employe['modified']
+       ]);
+
+        if(!$reussi){
+
+            return false;
+        }
+
+    }
+
+    return true;
+}
+
 
 function afficheNombre($nomber){
 
@@ -144,7 +243,7 @@ function octoyerAJustement($ajustement, $bruts, $matricule)
     $result->closeCursor();
     $montant_Anne_anterieur =  $montant['ajustement'];
 
-    return $ajustement_get + $montant_Anne_anterieur;
+    return round($ajustement_get + $montant_Anne_anterieur);
 }
 
 /**
@@ -175,9 +274,18 @@ function inssChezEmployeur($brut1, $allocation_familial)
         $risque_employeur = $base_pension_employeur * 3 / 100;
     }
 
-    $inessEmployeur = $pension_employeur + $risque_employeur;
+    $inessEmployeur = $pension_employeur +  $risque_employeur ;
+    //Calculer du base risque
+    $base__risque_employeur = ($base_pension_employeur > 80000) ? 80000 : $base_pension_employeur; 
+
+    $montant_risque =  $risque_employeur;
     
-    return $inessEmployeur;
+    return [
+        'inessEmployeur' => round($inessEmployeur),
+        'inss_employe' => round($pension_employeur),
+        'base__risque_employeur' => round($base__risque_employeur),
+        'montant_risque' =>  round($montant_risque)
+    ];
 }
 
 
@@ -196,10 +304,10 @@ function calculer_ipr($base_ipr){
     else if($base_ipr <=300000){
         $ipr = ($base_ipr - 150000) *20 /100;
     }else{
-     $ipr = 30000 + ($base_ipr - 300000) *30 /100;
- }
+       $ipr = 30000 + ($base_ipr - 300000) *30 /100;
+   }
 
- return $ipr;
+   return round($ipr);
 
 }
 
@@ -220,6 +328,8 @@ function calculer_ipr($base_ipr){
  */
 
 function calcule_epargne($matricule, $periode){
+
+    // SELECT * FROM `avances` WHERE `date_fin` >= '2020-01-01' AND `date_avance`>='2020-01-01' AND matricule = 29
     $db = connexion();
 
     $q = 'SELECT SUM(montant) as epargnes_total
@@ -231,7 +341,7 @@ function calcule_epargne($matricule, $periode){
     $epargnes_total = $result->fetch();
 
     $result->closeCursor();
-    return floatval($epargnes_total['epargnes_total']);
+    return round(floatval($epargnes_total['epargnes_total']));
 
 }
 
@@ -242,13 +352,30 @@ function calcule_epargne($matricule, $periode){
 
 
 function calcule_avances($matricule, $periode){
- $db = connexion();
- $q = 'SELECT SUM(montant_moi) as montant_moi FROM `avances` WHERE matricule = '.$matricule.' AND YEAR(`date_fin`) >= '. $periode['annee'] .' AND MONTH(`date_fin`) >='. $periode['mois'];
- $result = $db->query($q);
- $montant_avance = $result->fetch();
+   $db = connexion();
 
- $result->closeCursor();
- return floatval($montant_avance['montant_moi']);
+   $dateActuel = $periode['annee'].'-'.$periode['mois'].'-'.'01';
+
+ // $q = 'SELECT SUM(montant_moi) as montant_moi FROM `avances` WHERE matricule = '.$matricule.' AND //YEAR(`date_fin`) >= '. $periode['annee'] .' AND MONTH(`date_fin`) >='. $periode['mois'];
+
+   // SELECT * FROM `avances` WHERE `date_fin` >= '2020-01-01' AND `date_avance`>='2020-01-01' AND matricule = 29
+
+   // $q = "
+   // SELECT SUM(montant_Moi) as montant_moi
+   // FROM avances
+   // WHERE date_fin >= '". $dateActuel."' + interval 1 day AND matricule=".$matricule;
+
+
+   $q = "
+   SELECT SUM(montant_Moi) as montant_moi
+   FROM avances
+    `avances` WHERE `date_fin` >= '".$dateActuel."' AND `date_avance`<='".$dateActuel."' AND matricule = ".$matricule;
+
+   $result = $db->query($q);
+   $montant_avance = $result->fetch();
+
+   $result->closeCursor();
+   return round(floatval($montant_avance['montant_moi']));
 }
 
 
@@ -258,26 +385,31 @@ function calcule_avances($matricule, $periode){
 //   AND date_fin < '2025-11-10' + interval 1 day and matricule= 99
 
 function calcule_credit($matricule, $periode){
- $db = connexion();
+   $db = connexion();
    // $q = 'SELECT SUM(montant_moi) as montant_moi FROM `credits` 
    // WHERE matricule = '.$matricule.' AND YEAR(`date_fin`) >= '. $periode['annee'] .' AND MONTH(`date_fin`) <='. $periode['mois'];
 
- $dateActuel = $periode['annee'].'-'.$periode['mois'].'-'.'01';
+   $dateActuel = $periode['annee'].'-'.$periode['mois'].'-'.'01';
 
 
- $q = "
- SELECT SUM(montant_Moi) as montant_moi
- FROM credits
- WHERE date_fin >= '". $dateActuel."' + interval 1 day AND matricule=".$matricule;
+   // $q = "
+   // SELECT SUM(montant_Moi) as montant_moi
+   // FROM credits
+   // WHERE date_fin >= '". $dateActuel."' + interval 1 day AND matricule=".$matricule;
+
+    $q = "
+    SELECT SUM(montant_Moi) as montant_moi
+   FROM credits
+    `avances` WHERE `date_fin` >= '".$dateActuel."' AND `date_credit`<='".$dateActuel."' AND matricule = ".$matricule;
 
   // var_dump($q);
   // die();
 
- $result = $db->query($q);
- $montant_avance = $result->fetch();
+   $result = $db->query($q);
+   $montant_avance = $result->fetch();
 
- $result->closeCursor();
- return floatval($montant_avance['montant_moi']);
+   $result->closeCursor();
+   return round(floatval($montant_avance['montant_moi']));
 
 }
 
@@ -294,7 +426,7 @@ function calcul_assurance($matricule, $periode){
     $montant = $result->fetch();
 
     $result->closeCursor();
-    return floatval($montant['montant']);
+    return round(floatval($montant['montant']));
 
 }
 
@@ -312,9 +444,12 @@ function calcul_misepied($matricule, $periode){
 
     $result->closeCursor();
 
-    return floatval($montant['montant']);
+    return round(floatval($montant['montant']));
 
 }
+
+
+//Function Recuperant la Id de la variable est la somme total a y verse
 
 //Total_depenses = total_retenu + net_a_payer + inss_patronal +mft_patronal
 
@@ -325,7 +460,7 @@ function net_a_payer($employes, $matricule){
 
     foreach ($employes as $key => $employe) 
         if($employe['matricule'] == $matricule)
-            return $employe['net_a_payer'];
+            return round($employe['net_a_payer']);
 
         return 0;
 
@@ -338,13 +473,14 @@ function net_a_payer($employes, $matricule){
 
 function ordreVirement($employes_table_paiement = array()){
     $employes_ordre_virement = [];
+    $periode = $employes_table_paiement[0]['periode'];
     $db = connexion();
 
     $q = 'SELECT e.compte as compte, e.nom as nom,e.prenom as prenom 
     ,e.matricule as matricule ,
     b.name as banque_name, 
-    b.id as banque_id FROM employes e 
-    JOIN banques b ON e.banque_id = b.id ORDER BY b.name ASC';
+    b.id as banque_id FROM employes e
+    JOIN banques b ON e.banque_id = b.id WHERE e.etat = 1 ORDER BY b.name ASC';
 
     $result = $db->query($q);
 
@@ -352,6 +488,7 @@ function ordreVirement($employes_table_paiement = array()){
         $employe = [];
 
         $employe['compte'] = $data['compte'];
+        $employe['periode'] = $periode;
         $employe['nom'] = $data['nom'];
         $employe['prenom'] = $data['prenom'];
         $employe['banque_name'] = $data['banque_name'];
@@ -359,6 +496,8 @@ function ordreVirement($employes_table_paiement = array()){
         $employe['montant'] = net_a_payer($employes_table_paiement, $data['matricule']);
 
         $employes_ordre_virement[] = $employe;
+
+
 
     }
 
@@ -374,13 +513,14 @@ function mituel_get_file($employes){
     foreach ($employes as $key => $employe) {
         $employe_tab = [];
         $employe_tab['matricule'] = $employe['matricule'];
+        $employe_tab['periode'] = $employe['periode'];
         $employe_tab['nom'] = $employe['nom'];
         $employe_tab['prenom'] = $employe['prenom'];
 
         $employe_tab['base'] = $employe['salaireBase'] + $employe['ind_deplacement'] + $employe['prime_Fonction'] ;
         $employe_tab['mituel_employeur_Patronal'] = $employe['mituel_employeur_Patronal'];
         $employe_tab['mutuel_employe'] = $employe['mutuel_employe'];
-        $employe_tab['montant'] = $employe['mutuel_employe'] +  $employe_tab['mituel_employeur_Patronal'];
+        $employe_tab['montant'] = round($employe['mutuel_employe']) +  round($employe_tab['mituel_employeur_Patronal']);
 
         $mituel_function[] = $employe_tab;
 
@@ -399,6 +539,7 @@ function ipr_get_file($employes){
     foreach ($employes as $key => $employe) {
         $employe_tab = [];
         $employe_tab['matricule'] = $employe['matricule'];
+        $employe_tab['periode'] = $employe['periode'];
         $employe_tab['nom'] = $employe['nom'];
         $employe_tab['prenom'] = $employe['prenom'];
         $employe_tab['ipr'] = $employe['ipr'];
@@ -420,7 +561,7 @@ function ipr_get_file($employes){
  * @param  [type] $employes [description]
  * @return [type]           [description]
  */
-function regularisation_get_file($employes){
+function  regularisation_get_file($employes){
     $employes_list = [];
 
     foreach ($employes as $key => $value) {
@@ -428,6 +569,7 @@ function regularisation_get_file($employes){
 
         $employe['matricule'] = $value['matricule'];
         $employe['nom'] = $value['nom'];
+        $employe['periode'] = $value['periode'];
         $employe['prenom'] = $value['prenom'];
         $employe['date_embauche'] = $value['date_embauche'];
 
@@ -497,7 +639,7 @@ function order_table_by_key($table , $key_word){
     $dataOrdonner = [];
 
     foreach ($table as $key => $value) {
-        
+
         $keyName = $value[$key_word];
         $tab=[];
 
@@ -517,6 +659,276 @@ function order_table_by_key($table , $key_word){
 }
 
 
+//La fiche des retenus
+
+
+function get_retenu_epargnes($matricule , $periode){
+   $dateActuel = $periode['annee'].'-'.$periode['mois'].'-'.'01';
+
+   $db = connexion();
+
+   $q = "SELECT SUM(montant) as montant_total, variable_id FROM epargnes WHERE 
+   matricule =". $matricule." AND periode >= '".$dateActuel."' GROUP BY variable_id";
+
+   $request = $db->query($q);
+
+   $data_get = $request->fetchAll();
+
+   return  $data_get;
+
+}
+
+
+function get_retenu_assurances($matricule , $periode){
+   $dateActuel = $periode['annee'].'-'.$periode['mois'].'-'.'01';
+
+   $db = connexion();
+
+   $q = "SELECT SUM(montant) as montant_total, variable_id FROM assurances WHERE 
+   matricule =". $matricule." AND periode >= '".$dateActuel."' GROUP BY variable_id";
+
+   $request = $db->query($q);
+
+   $data_get = $request->fetchAll();
+
+   return  $data_get;
+
+}
+
+
+
+function get_retenu_credits($matricule , $periode){
+   $dateActuel = $periode['annee'].'-'.$periode['mois'].'-'.'01';
+
+   $db = connexion();
+
+   $q = "SELECT SUM(montant_Moi) as montant_total, variable_id FROM credits WHERE 
+   matricule =". $matricule." AND date_fin >= '".$dateActuel."' GROUP BY variable_id";
+
+   $request = $db->query($q);
+
+   $data_get = $request->fetchAll();
+
+   return  $data_get;
+
+}
+
+
+
+function get_retenu_avances($matricule , $periode){
+   $dateActuel = $periode['annee'].'-'.$periode['mois'].'-'.'01';
+
+   $db = connexion();
+
+   $q = "SELECT SUM(montant_moi) as montant_total, variable_id FROM avances WHERE 
+   matricule =". $matricule." AND date_fin >= '".$dateActuel."' GROUP BY variable_id";
+
+   $request = $db->query($q);
+
+   $data_get = $request->fetchAll();
+
+
+   return  $data_get;
+
+}
+
+
+function get_file_autre_retenues($employes){
+
+    $table_liste = [];
+
+    foreach ($employes as $key => $value) {
+        $dataEmploye = [];
+
+        $matricule = $value['matricule'];
+        $periode = $value['periode'];
+
+        $dataEmploye['nom'] = $value['nom'];
+        $dataEmploye['prenom'] = $value['prenom'];
+        $dataEmploye['matricule'] = $value['matricule'];
+        $dataEmploye['periode'] = $periode;
+
+        $retenues_epargnes = get_retenu_epargnes($matricule,$periode);
+        $retenues_credits = get_retenu_credits($matricule,$periode);
+        $retenues_avances = get_retenu_avances($matricule, $periode);
+        $retenues_assurances = get_retenu_assurances($matricule, $periode);
+
+
+        if(!empty($retenues_epargnes)){
+            foreach ($retenues_epargnes as $k => $v) {
+                $dataEmploye['montant'] = $v['montant_total'];
+                $variable_name = nameForTable_id($v['variable_id'], 'variables');
+                $dataEmploye['variable_name'] =  $variable_name['name'];
+                $table_liste[] = $dataEmploye;
+
+            }
+        }
+
+
+        if(!empty($retenues_credits)){
+            foreach ($retenues_credits as $k => $v) {
+                $dataEmploye['montant'] = $v['montant_total'];
+                
+                $variable_name = nameForTable_id($v['variable_id'], 'variables');
+                $dataEmploye['variable_name'] =  $variable_name['name'];
+                $table_liste[] = $dataEmploye;
+
+            }
+        }
+
+        if(!empty($retenues_avances)){
+            foreach ($retenues_avances as $k => $v) {
+                $dataEmploye['montant'] = $v['montant_total'];
+
+                $variable_name = nameForTable_id($v['variable_id'], 'variables');
+                $dataEmploye['variable_name'] =  $variable_name['name'];
+                $table_liste[] = $dataEmploye;
+
+            }
+        }
+
+        if(!empty($retenues_assurances)){
+            foreach ($retenues_assurances as $k => $v) {
+                $dataEmploye['montant'] = $v['montant_total'];
+
+                $variable_name = nameForTable_id($v['variable_id'], 'variables');
+                $dataEmploye['variable_name'] =  $variable_name['name'];
+                $table_liste[] = $dataEmploye;
+
+            }
+        }
+
+    }
+
+    return $table_liste;
+
+}
+
+function find_employe_by_matricule($employes, $matricule){
+
+    foreach ($employes as $key => $value) {
+     if($value['matricule'] == $matricule){
+        return $value;
+    }
+}
+
+return null;
+}
+
+//Les retenues d'un employes par son matricule 
+
+
+function get_autre_retenue_employes($matricule , $periode){
+
+    $retenues_credits = get_retenu_credits($matricule,$periode);
+    $retenues_avances = get_retenu_avances($matricule, $periode);
+
+
+    $table_data = [];
+
+
+    if(!empty($retenues_credits)){
+        foreach ($retenues_credits as $key => $value) {
+            $dette = [];
+
+            $variable_name = nameForTable_id($value['variable_id'], 'variables');
+
+            $dette['variable_name'] = $variable_name['name'];
+
+            $dette['montant'] = $value['montant_total'];
+
+
+            $table_data[] = $dette;
+
+        }
+    }
+
+
+    if(!empty($retenues_avances)){
+        foreach ($retenues_avances as $key => $value) {
+            $dette = [];
+
+            $variable_name = nameForTable_id($value['variable_id'], 'variables');
+
+            $dette['variable_name'] = $variable_name['name'];
+
+            $dette['montant'] = $value['montant_total'];
+
+            $table_data[] = $dette;
+        }
+    }
+
+
+    return $table_data;
+}
+
+
+//Function 
+
+
 function get_file_iness($employes){
-    $dataTable = [];
+    $employesdataTable = [];
+
+
+    foreach ($employes as $key => $value) {
+
+     $employeData = [];
+
+     $employeData['nom'] = $value['nom'];
+     $employeData['prenom'] = $value['prenom'];
+     $employeData['periode'] = $value['periode'];
+       // $employeData['matricule'] = $value[''];
+       //Part employer 
+     $employeData['base_pension_employe'] = $value['base_pension_employe'];
+     $employeData['montant_pension_employe'] = $value['pension_employe'];
+     $employeData['base_risque_employe'] = 0;
+     $employeData['montant_risque_employe'] = 0;
+
+       //Part employeur 
+
+     $employeData['base_pension_employeur'] = $value['base_pension_employe'];
+     $employeData['montant_pension_employeur'] = round($value['inss_employe']);
+     $employeData['base_risque_employeur'] = $value['base__risque_employeur'];
+     $employeData['montant_risque_employeur'] = $value['montant_risque'];
+
+
+       //Le total 
+
+     $total_montant =  round($employeData['montant_pension_employe']) + round($employeData['montant_risque_employe']) + round($employeData['montant_pension_employeur']) + round($employeData['montant_risque_employeur']);
+
+     $employeData['total'] = $total_montant;
+
+
+     $employesdataTable[] = $employeData;
+
+ }
+
+
+ return $employesdataTable;
+}
+
+
+function get_FilesPaie($employes){
+    return $employes;
+}
+
+
+
+//La fonction verifier que l'ordre de virement n'appartient pas a kcb ou autre
+
+
+
+function checkValue($value,$key='kcb'){
+
+    if(preg_match('/'.$key.'/i',$value)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+function iness_trimestrielle($periode){
+
+    
+
 }

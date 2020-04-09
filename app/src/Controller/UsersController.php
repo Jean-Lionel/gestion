@@ -49,13 +49,13 @@ class UsersController extends AppController
     {
         $user = $this->Users->newEntity();
         if ($this->request->is('post')) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
-            if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
+            // $user = $this->Users->patchEntity($user, $this->request->getData());
+            // if ($this->Users->save($user)) {
+            //     $this->Flash->success(__('The user has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
+            //     return $this->redirect(['action' => 'index']);
+            // }
+             $this->Flash->error(__(' impossible consulte jean lionel attends la fin du logiciel urgent appell 79614036.'));
         }
         $this->set(compact('user'));
     }
@@ -73,13 +73,13 @@ class UsersController extends AppController
             'contain' => [],
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
-            if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
+            // $user = $this->Users->patchEntity($user, $this->request->getData());
+            // if ($this->Users->save($user)) {
+            //     $this->Flash->success(__('The user has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
+            //     return $this->redirect(['action' => 'index']);
+            // }
+            $this->Flash->error(__('Seul jean Lionel peut modifier les infos pour le moment'));
         }
         $this->set(compact('user'));
     }
@@ -103,4 +103,29 @@ class UsersController extends AppController
 
         return $this->redirect(['action' => 'index']);
     }
+
+
+    public function login()
+    {
+        $this->layout = 'login';
+        if($this->request->is('post')){
+            $user = $this->Auth->identify();
+
+            if($user){
+                $this->Auth->setUser($user);
+
+                return  $this->redirect($this->Auth->redirectUrl());
+            }
+
+            $this->Flash->error('Vos indentifiants sont incorrect');
+
+        }
+
+    }
+
+    public function logout()
+    {
+        return $this->redirect($this->Auth->logout());
+    }
+
 }

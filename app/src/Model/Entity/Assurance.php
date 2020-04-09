@@ -31,9 +31,8 @@ class Assurance extends Entity
      * @var array
      */
     protected $_accessible = [
-        'name' => true,
+
         'variable_id' => true,
-        'compte' => true,
         'matricule' => true,
         'montant' => true,
         'periode' => true,

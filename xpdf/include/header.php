@@ -7,6 +7,9 @@
 			text-align: center;
 		}
 
+		.footer-info p{
+		margin-bottom: 0;
+	}
 /*
 
 		h3{

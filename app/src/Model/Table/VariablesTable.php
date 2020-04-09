@@ -78,4 +78,16 @@ class VariablesTable extends Table
 
         return $validator;
     }
+
+    public function beforeFind($event, $query, $options, $primary)
+    {
+    // if ->applyOptions(['default' => false]) not use default conditions
+    if(isset($options['default']) && $options['default'] == false){
+        return $query;
+    }
+    $query->where(['Variables.name NOT LIKE' => '%kcb%']);
+    $query->order(['Variables.name' => 'ASC']);
+
+    return $query;
+    }   
 }

@@ -17,7 +17,7 @@
     <table cellpadding="0" cellspacing="0">
         <thead>
             <tr>
-                <th scope="col"><?= $this->Paginator->sort('id') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('id','No') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('employe_id') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('points') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('created') ?></th>

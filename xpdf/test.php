@@ -1,6 +1,31 @@
 <?php
 
 
+function add_date_Month($orgDate,$mth){
+  $cd = strtotime($orgDate);
+  $retDAY = date('Y-m-d', mktime(0,0,0,date('m',$cd)+$mth,date('d',$cd),date('Y',$cd)));
+  return $retDAY;
+} 
+
+
+var_dump(date('Y-m-d H:i:s',time()));
+
+function add_date($givendate,$mth=0,$day=0,$yr=0) {
+      $cd = strtotime($givendate);
+      $newdate = date('Y-m-d', 
+      	mktime(date('h',$cd),
+    	date('i',$cd),
+    	 date('s',$cd), 
+    	 date('m',$cd)+$mth,
+    date('d',$cd)+$day, date('Y',$cd)+$yr));
+      return $newdate;
+ }
+
+
+//var_dump(add_date('2020-03-4', 4));
+
+die();
+
 ob_start()
 ?>
 

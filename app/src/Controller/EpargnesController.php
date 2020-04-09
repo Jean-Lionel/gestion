@@ -2,6 +2,7 @@
 namespace App\Controller;
 
 use App\Controller\AppController;
+use Cake\Datasource\ConnectionManager;
 
 /**
  * Epargnes Controller
@@ -30,7 +31,7 @@ class EpargnesController extends AppController
         ];
         $epargnes = $this->paginate($this->Epargnes,
             [
-                'order' =>["Epargnes.periode DESC"] 
+                'order' =>["Epargnes.periode DESC"]
             ]);
 
         $this->set(compact('epargnes'));
@@ -137,18 +138,78 @@ class EpargnesController extends AppController
 
     public function search()
     {
+        $this->layout = 'ajax';
+
        $keyWord = $this->request->query('searchKey');
 
-       $q = $this->Epargnes->find('all',[
+       $q =  $this->Epargnes->find('all');
+
+
+       if($keyWord){
+         $q = $this->Epargnes->find('all',[
         'conditions' => [
-            'Epargnes.matricule' =>  $keyWord 
+            'Epargnes.matricule' =>  $keyWord
         ],
         'oder' =>
             'Epargnes.periode DESC'
-        
+
        ]);
+
+       }
+
 
        $this->set('epargnes',$this->paginate($q));
        $this->set('_serialize',['epargnes']);
+    }
+
+
+    public function reporter(){
+        $connection = ConnectionManager::get('default');
+        $temps = $this->request->getData();
+
+        $current_time = $temps['temp_actuel']['year'].'-'.$temps['temp_actuel']['month'].'-'.$temps['temp_actuel']['day'];
+
+        $old_time = $temps['temp_passe']['year'].'-'.$temps['temp_passe']['month'].'-'.$temps['temp_passe']['day'];
+        $year = $temps['temp_actuel']['year'] ;
+        $month = $temps['temp_actuel']['month'];
+
+        $current_data = $connection->execute("SELECT IF(COUNT(*) < 1 , 1,0) as result FROM epargnes WHERE YEAR(periode) = '$year' AND MONTH(periode) = '$month'")->fetchAll('assoc');
+
+
+        if($current_data[0]['result'] == '1'){
+
+            if($current_time > $old_time) {
+
+                $results = $connection->execute('
+                SELECT * FROM epargnes WHERE YEAR(periode)=' . $temps['temp_passe']['year'] . '
+                AND MONTH(periode)=' . $temps['temp_passe']['month'])->fetchAll('assoc');
+
+                foreach ($results as $key => $value) {
+                    $epargne = $this->Epargnes->newEntity();
+                    $epargne->matricule = $value['matricule'];
+                    $epargne->montant = $value['montant'];
+                    $epargne->periode = $current_time;
+                    $epargne->variable_id = $value['variable_id'];
+
+                    if (!$this->Epargnes->save($epargne)) {
+
+                        $this->Flash->error(__('Opération n\'as pas été effectuée réessayer encore ou demander l\'aide'));
+                    }
+                    // $this->Epargnes->save($epargne)
+
+                }
+                $this->Flash->success(__('Opération réussi'));
+            }else{
+                return $this->redirect(['action' => 'add']);
+
+            }
+
+
+        }else{
+            $this->Flash->error(__("Opération impossible car vous l' avez déjà effectuée "));
+        }
+
+        return $this->redirect(['action' => 'index']);
+
     }
 }

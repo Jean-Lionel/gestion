@@ -63,21 +63,21 @@ class AvancesTable extends Table
             ->requirePresence('matricule', 'create')
             ->notEmptyString('matricule');
 
-        $validator
-            ->scalar('compte')
-            ->maxLength('compte', 255)
-            ->requirePresence('compte', 'create')
-            ->notEmptyString('compte');
+        // $validator
+        //     ->scalar('compte')
+        //     ->maxLength('compte', 255)
+        //     ->requirePresence('compte', 'create')
+        //     ->notEmptyString('compte');
 
         $validator
             ->numeric('montant_moi')
             ->requirePresence('montant_moi', 'create')
             ->notEmptyString('montant_moi');
 
-        $validator
-            ->numeric('montant_restant')
-            ->requirePresence('montant_restant', 'create')
-            ->notEmptyString('montant_restant');
+        // $validator
+        //     ->numeric('montant_restant')
+        //     ->requirePresence('montant_restant', 'create')
+        //     ->notEmptyString('montant_restant');
 
         $validator
             ->numeric('montant')

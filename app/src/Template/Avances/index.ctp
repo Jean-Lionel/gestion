@@ -13,11 +13,21 @@
     </ul>
 </nav>
 <div class="avances index large-10 medium-10 columns content">
-    <h3><?= __('Avances') ?></h3>
+    
+    <div class="columns medium-6">
+        <h3><?= __('Avances') ?></h3>
+    </div>
+    <div class="columns medium-4">
+        <?= $this->Form->control('keyword',['placeholder'=>'Entre le numero mattricule','label'=>false]) ?>
+    </div>
+
+    <div class="table-content">
+        
+   
     <table cellpadding="0" cellspacing="0" class="table table-responsive">
         <thead>
             <tr>
-                <th scope="col"><?= $this->Paginator->sort('id') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('id','No') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('matricule') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('variable_id') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('montant_moi') ?></th>
@@ -49,6 +59,7 @@
             <?php endforeach; ?>
         </tbody>
     </table>
+     </div>
     <div class="paginator">
         <ul class="pagination">
             <?= $this->Paginator->first('<< ' . __('first')) ?>
@@ -60,3 +71,38 @@
         <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
     </div>
 </div>
+
+
+<script>
+    $(document).ready(function() {
+
+        $('#keyword').keyup(function() {
+            const keyword = $(this).val()
+            searchWord(keyword);
+        });
+
+
+        function searchWord(keyword){
+            $.ajax({
+                url: "<?= $this->Url->build(['controller'=>'avances','action'=>'search']) ?>",
+                type: 'GET',
+            
+                data: {keyword: keyword},
+            })
+            .done(function(response) {
+                
+
+                console.log(response)
+                $('.table-content').html(response)
+            })
+            .fail(function() {
+                console.log("error");
+            })
+            .always(function() {
+                console.log("complete");
+            });
+
+        }
+        
+    });
+</script>

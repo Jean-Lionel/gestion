@@ -17,12 +17,19 @@ class CreditsController extends AppController
      *
      * @return \Cake\Http\Response|null
      */
+
+    public function initialize(){
+        parent::initialize();
+        $this->loadModel('Employes');
+        $this->loadComponent('Myfonction');
+    }
     public function index()
     {
+
         $this->paginate = [
             'contain' => ['Variables'],
         ];
-        $credits = $this->paginate($this->Credits);
+        $credits = $this->paginate($this->Credits, ['order' => ['date_credit' => 'DESC']]);
 
         $this->set(compact('credits'));
     }
@@ -51,14 +58,38 @@ class CreditsController extends AppController
     public function add()
     {
         $credit = $this->Credits->newEntity();
+
         if ($this->request->is('post')) {
             $credit = $this->Credits->patchEntity($credit, $this->request->getData());
-            if ($this->Credits->save($credit)) {
-                $this->Flash->success(__('The credit has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
+            $employe = $this->Employes->find('all',['conditions'=>['matricule' => $credit->matricule]])->first();
+            if($employe != null){
+
+                //calculer du paiement credit 
+
+                $montant_Moi = $credit->montant / $credit->periode_paiement;
+
+                $date_credit = (array)$credit->date_credit;
+                $date_fin = $this->Myfonction->add_date($date_credit['date'],$credit->periode_paiement);
+                
+                $credit->montant_Moi = round($montant_Moi);
+                $credit->date_fin = $date_fin;
+                $credit->periode = $credit->date_credit;
+
+               
+                if ($this->Credits->save($credit)) {
+                    $this->Flash->success(__('Opération réussi.'));
+
+                    return $this->redirect(['action' => 'index']);
+                }
+                $this->Flash->error(__('Erreur réessayer encore'));
+
+            }else{
+
+                $this->Flash->error(__('Vérifier le numéro matricule'));
             }
-            $this->Flash->error(__('The credit could not be saved. Please, try again.'));
+
+            
         }
         $variables = $this->Credits->Variables->find('list', ['limit' => 200]);
         $this->set(compact('credit', 'variables'));
@@ -77,13 +108,33 @@ class CreditsController extends AppController
             'contain' => [],
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
-            $credit = $this->Credits->patchEntity($credit, $this->request->getData());
-            if ($this->Credits->save($credit)) {
-                $this->Flash->success(__('The credit has been saved.'));
+           
+             $credit = $this->Credits->patchEntity($credit, $this->request->getData());
 
-                return $this->redirect(['action' => 'index']);
+            $employe = $this->Employes->find('all',['conditions'=>['matricule' => $credit->matricule]])->first();
+            if($employe != null){
+
+                $montant_Moi = $credit->montant / $credit->periode_paiement;
+
+                $date_credit = (array)$credit->date_credit;
+                $date_fin = $this->Myfonction->add_date($date_credit['date'],$credit->periode_paiement);
+                
+                $credit->montant_Moi = round($montant_Moi);
+                $credit->date_fin = $date_fin;
+                $credit->periode = $credit->date_credit;
+
+               
+                if ($this->Credits->save($credit)) {
+                    $this->Flash->success(__('Opération réussi.'));
+
+                    return $this->redirect(['action' => 'index']);
+                }
+                $this->Flash->error(__('Erreur réessayer encore'));
+
+            }else{
+
+                $this->Flash->error(__('Vérifier le numéro matricule'));
             }
-            $this->Flash->error(__('The credit could not be saved. Please, try again.'));
         }
         $variables = $this->Credits->Variables->find('list', ['limit' => 200]);
         $this->set(compact('credit', 'variables'));
@@ -111,12 +162,13 @@ class CreditsController extends AppController
 
 
     public function search(){
+        $this->layout = 'ajax';
         $keyWord = $this->request->query('keyWord');
-       $query = $this->Credits->find('all',[
-        'conditions' => ['matricule' => $keyWord]
-       ]);
+        $query = $this->Credits->find('all',[
+            'conditions' => ['matricule' => $keyWord]
+        ]);
 
-         $this->set('credits',$this->paginate($query));
-         $this->set('_serialize',['credits']);
+        $this->set('credits',$this->paginate($query));
+        $this->set('_serialize',['credits']);
     }
 }

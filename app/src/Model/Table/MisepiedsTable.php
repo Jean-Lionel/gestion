@@ -55,16 +55,20 @@ class MisepiedsTable extends Table
             ->requirePresence('matricule', 'create')
             ->notEmptyString('matricule');
 
-        $validator
-            ->numeric('montant')
-            ->requirePresence('montant', 'create')
-            ->notEmptyString('montant');
+        // $validator
+        //     ->numeric('montant')
+        //     ->requirePresence('montant', 'create')
+        //     ->notEmptyString('montant');
 
         $validator
             ->scalar('motif')
             ->maxLength('motif', 255)
             ->requirePresence('motif', 'create')
             ->notEmptyString('motif');
+
+        $validator
+            ->integer('nombre_jour');
+
 
         return $validator;
     }

@@ -34,10 +34,10 @@ class Avance extends Entity
      */
     protected $_accessible = [
         'matricule' => true,
-        'compte' => true,
+        //'compte' => true,
         'variable_id' => true,
         'montant_moi' => true,
-        'montant_restant' => true,
+        // 'montant_restant' => true,
         'montant' => true,
         'created' => true,
         'modified' => true,

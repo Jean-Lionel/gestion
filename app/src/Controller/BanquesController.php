@@ -108,6 +108,7 @@ class BanquesController extends AppController
 
     public function search(){
         //$this->request->allowMethod('ajax');
+        $this->layout = 'ajax';
 
         $keyWord = $this->request->query('keyWord');
 
@@ -118,6 +119,8 @@ class BanquesController extends AppController
 
         $this->set('banques',$this->paginate($query));
         $this->set('_serialize',['banques']);
+
+
 
     }
 }

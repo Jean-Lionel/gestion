@@ -1,9 +1,19 @@
 <?php
+require_once('./config/getDate.php');
 require_once('./config/calcule.php');
 
 $resultat = ordreVirement($employes);
 
 
+
+// $somme = 0;
+
+// foreach ($resultat as $key => $value) 
+// 	$somme  += $value['montant'];
+	
+
+
+// die(afficheNombre($somme));
 
 // function ordonneParBanques($resultat){
 // 	$dataOrdonner = [];
@@ -33,6 +43,10 @@ $ordreVirements = order_table_by_key($resultat,'banque_name');
 // affiche($ordreVirements[0]);
 // die();
 
+
+$totalOrdreVirement = 0;
+
+
 ob_start();
 ?>
 
@@ -61,12 +75,12 @@ ob_start();
 
 <?php foreach ($ordreVirements as $key => $ordreVirementBanque):  ?>
 				
-	<page backtop="0mm" backleft="5mm" backright="5mm">
+	<page backtop="0mm" backleft="5mm" backright="5mm" footer="page">
 		<?php require("include/footer.php"); ?>
 
 	<?php require("include/header_portrait.php");?>
 
-	<p class="title">ORDRE DE VIREMENT DES SALAIRES:03/2020</p>
+	<p class="title">ORDRE DE VIREMENT DES SALAIRES: <?= $ordreVirementBanque[0]['periode']['mois'] .' / ' .$ordreVirementBanque[0]['periode']['annee'] ?></p>
 	
 		<h4>BANQUE : <?= strtoupper($ordreVirementBanque[0]['banque_name'])?></h4>
 
@@ -90,9 +104,13 @@ ob_start();
 
 			<?php endforeach; ?>
 			<tr>
-				<?php $totalValue = count_sum_colonne_table($ordreVirementBanque,'montant'); ?>
+				<?php $totalValue = count_sum_colonne_table($ordreVirementBanque,'montant'); 
+
+				$totalOrdreVirement += $totalValue;
+
+				?>
 				<td colspan="2" style="text-align: center;"><b>Total General </b></td>
-				<td style="text-align: center;"><b><?= $totalValue; ?> </b></td>
+				<td style="text-align: center;"><b><?= afficheNombre($totalValue); ?> </b></td>
 			</tr>
 			</tbody>
 		</table>
@@ -112,6 +130,8 @@ ob_start();
 				</td>
 				
 			</tr>
+
+	
 			
 		</table>
 

@@ -26,10 +26,10 @@
            <table class="table table-responsive">
         <thead>
             <tr>
-                <th scope="col"><?= $this->Paginator->sort('id') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('id','No') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('matricule') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('montant') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('periode') ?></th>
+                <th scope="col"><?= $this->Paginator->sort('periode',"Periode d' epargne") ?></th>
                 <th scope="col"><?= $this->Paginator->sort('Variable') ?></th>
                 <th scope="col" class="actions"><?= __('Actions') ?></th>
             </tr>

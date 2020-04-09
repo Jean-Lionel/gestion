@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>File impot</title>
+</head>
+<body>
+	<script src="js/myExcelXML.js">
+	</script>
+
+	<script>
+		function renderJson(response){
+			// var jsonArray = JSON.stringify(response);
+			let myJsonArray = JSON.stringify(response);
+	        var myTestXML = new myExcelXML(myJsonArray);
+	        myTestXML.setFileName('obr_impot');
+	        myTestXML.downLoad();
+	        window.location.replace("../app/menus");
+		}
+	</script>
+	<script src="impot_excel.php">
+		
+	</script>
+	
+</body>
+</html>

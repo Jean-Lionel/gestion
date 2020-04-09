@@ -1,0 +1,21 @@
+.menu-top img{
+	width: 40px;
+}
+.menu-top{
+	line-height: 0;
+	background: red;
+}
+
+.fixed-element{
+	 position: fixed;
+}
+/*html{
+	height: 100px;
+}*/
+
+.current-value{
+	background: red;
+	font-size: 20px;
+	width: 400px;
+	display: none;
+}

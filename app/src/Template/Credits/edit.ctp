@@ -21,20 +21,44 @@
 <div class="credits form large-9 medium-8 columns content">
     <?= $this->Form->create($credit) ?>
     <fieldset>
-        <legend><?= __('Edit Credit') ?></legend>
-        <?php
+        <legend class="text-center"><?= __('Modifier le  Crédit') ?></legend>
+
+        <div class="columns medium-6">
+            <?php
             echo $this->Form->control('matricule');
-            echo $this->Form->control('periode');
+            // echo $this->Form->control('periode');
             echo $this->Form->control('montant');
-            echo $this->Form->control('variable_id', ['options' => $variables]);
-            echo $this->Form->control('compte');
-            echo $this->Form->control('montant_Moi');
-            echo $this->Form->control('periode_paiement');
-            echo $this->Form->control('montant_restant');
-            echo $this->Form->control('date_credit');
-            echo $this->Form->control('date_fin');
         ?>
-    </fieldset>
-    <?= $this->Form->button(__('Submit')) ?>
+            
+        </div>
+
+        <div class="columns medium-6">
+            <?php 
+            echo $this->Form->control('periode_paiement',['label'=>'PERIODE DE PAIMENT ', 'placeholder'=> 'Exemple : 18 ']);
+            // echo $this->Form->control('montant_restant');
+            echo $this->Form->control('date_credit');
+            echo $this->Form->control('id');
+            ?>
+        </div>
+
+        <div class="columns medium-12">
+
+        <?php
+            echo $this->Form->control('variable_id', ['options' => $variables
+                ,'label'=>'Periode']);
+            // echo $this->Form->control('compte');
+            // echo $this->Form->control('montant_Moi');
+            // echo $this->Form->control('date_fin');
+        ?>
+            
+        </div>
+        <div class="columns medium-4">
+
+             <?= $this->Form->button(__('Modifier')) ?>
     <?= $this->Form->end() ?>
+            
+        </div>
+       
+    </fieldset>
+   
 </div>

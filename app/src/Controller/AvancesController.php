@@ -12,6 +12,12 @@ use App\Controller\AppController;
  */
 class AvancesController extends AppController
 {
+    public function initialize(){
+        parent::initialize();
+
+        $this->loadComponent('Myfonction');
+        $this->loadModel('Employes');
+    }
     /**
      * Index method
      *
@@ -53,12 +59,32 @@ class AvancesController extends AppController
         $avance = $this->Avances->newEntity();
         if ($this->request->is('post')) {
             $avance = $this->Avances->patchEntity($avance, $this->request->getData());
-            if ($this->Avances->save($avance)) {
-                $this->Flash->success(__('The avance has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
+            $employe = $this->Employes->find('all',[
+                'conditions' => ['matricule' => $avance->matricule]])->first();
+
+            if($employe != null){
+
+                $montant_moi = $avance->montant / $avance->periode;
+
+                $date_avance = (array)$avance->date_avance;
+                $date_fin = $this->Myfonction->add_date($date_avance['date'],$avance->periode);
+
+
+                $avance->montant_moi = round($montant_moi);
+                $avance->date_fin = $date_fin;
+
+                if ($this->Avances->save($avance)) {
+                    $this->Flash->success(__('Opération réussi'));
+
+                    return $this->redirect(['action' => 'index']);
+                }
+                $this->Flash->error(__('Réssayer encore '));
+
+            }else{
+                $this->Flash->error('Vérifier le numéro matricule');
             }
-            $this->Flash->error(__('The avance could not be saved. Please, try again.'));
+            
         }
         $variables = $this->Avances->Variables->find('list', ['limit' => 200]);
         $this->set(compact('avance', 'variables'));
@@ -78,12 +104,31 @@ class AvancesController extends AppController
         ]);
         if ($this->request->is(['patch', 'post', 'put'])) {
             $avance = $this->Avances->patchEntity($avance, $this->request->getData());
-            if ($this->Avances->save($avance)) {
-                $this->Flash->success(__('The avance has been saved.'));
 
-                return $this->redirect(['action' => 'index']);
+            $employe = $this->Employes->find('all',[
+                'conditions' => ['matricule' => $avance->matricule]])->first();
+
+            if($employe != null){
+
+                $montant_moi = $avance->montant / $avance->periode;
+
+                $date_avance = (array)$avance->date_avance;
+                $date_fin = $this->Myfonction->add_date($date_avance['date'],$avance->periode);
+
+
+                $avance->montant_moi = round($montant_moi);
+                $avance->date_fin = $date_fin;
+
+                if ($this->Avances->save($avance)) {
+                    $this->Flash->success(__('Opération réussi'));
+
+                    return $this->redirect(['action' => 'index']);
+                }
+                $this->Flash->error(__('Réssayer encore '));
+
+            }else{
+                $this->Flash->error('Vérifier le numéro matricule');
             }
-            $this->Flash->error(__('The avance could not be saved. Please, try again.'));
         }
         $variables = $this->Avances->Variables->find('list', ['limit' => 200]);
         $this->set(compact('avance', 'variables'));
@@ -107,5 +152,25 @@ class AvancesController extends AppController
         }
 
         return $this->redirect(['action' => 'index']);
+    }
+
+    public function search(){
+        $this->layout = 'ajax';
+        
+        $keyword = $this->request->query('keyword');
+
+        $query = $this->Avances->find('all');
+
+    if($keyword)
+        $query = $this->Avances->find('all',[
+            'conditions'=>['Avances.matricule'=> $keyword]
+        ]);
+
+        //debug($this->paginate($query));
+
+
+
+        $this->set('avances',$this->paginate($query));
+        $this->set('_serialize',['avances']);
     }
 }

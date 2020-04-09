@@ -30,5 +30,6 @@ class Misepied extends Entity
         'motif' => true,
         'created' => true,
         'modified' => true,
+        'nombre_jour' => true,
     ];
 }

@@ -4,10 +4,16 @@
  * @var \App\Model\Entity\Employe[]|\Cake\Collection\CollectionInterface $employes
  */
 ?>
+
+<style>
+    .actions img{
+        width: 25px;
+    }
+</style>
 <nav class="large-2 medium-2 columns" id="actions-sidebar">
     <ul class="side-nav">
         <li class="heading"><?= __('Actions') ?></li>
-        <li><?= $this->Html->link(__('New Employe'), ['action' => 'add']) ?></li>
+        <li><?= $this->Html->link(__('Nouvel Employé'), ['action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('List Levels'), ['controller' => 'Levels', 'action' => 'index']) ?></li>
         <li><?= $this->Html->link(__('New Level'), ['controller' => 'Levels', 'action' => 'add']) ?></li>
         <li><?= $this->Html->link(__('List Agences'), ['controller' => 'Agences', 'action' => 'index']) ?></li>
@@ -25,11 +31,15 @@
     </ul>
 </nav>
 <div class="employes index large-10 medium-10 columns content">
-    <h3><?= __('Employes') ?></h3>
-    <?= $this->Form->create("",['type'=>'get']); ?>
-    <div class="row">
-         <div class="medium-2 columns">
-             <?= $this->Form->control("champ",[
+    <div class="columns medium-6">
+        <h3><?= __('LISTE DE TOUS LES EMPLOYES') ?></h3>
+    </div>
+    
+    <div class="columns medium-4">
+        <?= $this->Form->create("",['type'=>'get']); ?>
+        <div class="row">
+           <div class="medium-5 columns">
+               <?= $this->Form->control("champ",[
                 'options'=>[
                     'matricule' => 'matricule',
                     'nom' => 'nom'
@@ -40,22 +50,22 @@
             ]); ?>
 
         </div>
-        <div class="medium-3 columns">
-            <?= $this->Form->control("keyWord",['label'=>false,'default'=>$this->request->query('keyWord')]); ?>
+
+        <div class="medium-7 columns">
+            <?= $this->Form->control("keyWord",['label'=>false,'default'=>$this->request->query('keyWord'),'placeholder'=>'Entre votre mot de rechercher']); ?>
         </div>
-        <div class="medium-2 columns">
-            <!-- <button>Rechercher</button> -->
-        </div>
+        
     </div>
     <?= $this->Form->end(); ?>
-    <table class="table table-hover table-responsive">
-        <thead>
-            <tr>
-                <th scope="col"><?= $this->Paginator->sort('id') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('matricule') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('nom') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('prenom') ?></th>
-                <th scope="col"><?= $this->Paginator->sort('dateNaissance','Date de naissance') ?></th>
+</div>
+<table class="table table-hover table-responsive">
+    <thead>
+        <tr>
+            <th scope="col"><?= $this->Paginator->sort('id','No') ?></th>
+            <th scope="col"><?= $this->Paginator->sort('matricule') ?></th>
+            <th scope="col"><?= $this->Paginator->sort('nom') ?></th>
+            <th scope="col"><?= $this->Paginator->sort('prenom') ?></th>
+            <th scope="col"><?= $this->Paginator->sort('dateNaissance','Date de naissance') ?></th>
               <!--  
                 <th scope="col"><?= $this->Paginator->sort('sexe') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('etatCivil') ?></th>
@@ -76,19 +86,19 @@
                 <th scope="col"><?= $this->Paginator->sort('created') ?></th>
                 <th scope="col"><?= $this->Paginator->sort('modified') ?></th>
                  <th scope="col"><?= $this->Paginator->sort('etat') ?></th>
-                !-->
-               
-                <th scope="col" class="actions"><?= __('Actions') ?></th>
-            </tr>
-        </thead>
-        <tbody>
+                 !-->
+
+                 <th scope="col" class="actions"><?= __('Actions') ?></th>
+             </tr>
+         </thead>
+         <tbody>
             <?php foreach ($employes as $key => $employe): ?>
-            <tr>
-                <td><?= ++$key ?></td>
-                <td><?= $this->Number->format($employe->matricule) ?></td>
-                <td><?= h($employe->nom) ?></td>
-                <td><?= h($employe->prenom) ?></td>
-                <td><?= h($employe->dateNaissance) ?></td>
+                <tr>
+                    <td><?= ++$key ?></td>
+                    <td><?= $this->Number->format($employe->matricule) ?></td>
+                    <td><?= h(strtoupper($employe->nom)) ?></td>
+                    <td><?= h(ucfirst($employe->prenom)) ?></td>
+                    <td><?= h($employe->dateNaissance) ?></td>
                <!-- 
                 <td><?= h($employe->sexe) ?></td>
                 <td><?= h($employe->etatCivil) ?></td>
@@ -113,32 +123,50 @@
                 !-->
                 <td class="actions">
 
-                    <?= $this->Html->link(__('Affiche'), ['action' => 'view', $employe->id]) ?>
-                    <?= $this->Html->link(__('Modifier'), ['action' => 'edit', $employe->id]) ?>
-                    <?= $this->Form->postLink(__('Supprime'), ['action' => 'delete', $employe->id], ['confirm' => __('Are you sure you want to delete # {0}?', $employe->id)]) ?>
+                    <?= $this->Html->link($this->Html->image('icon/view.png'), ['action' => 'view', $employe->id],['escape'=>false]) ?>
+                    <?= $this->Html->link($this->Html->image('icon/edit.png'), ['action' => 'edit', $employe->id],['escape'=>false]) ?>
+
+                    <?= $this->Form->postLink($this->Html->image('icon/delete.png'), ['action' => 'delete', $employe->id], ['confirm' => __('Are you sure you want to delete # {0}?', $employe->id),'escape'=>false])
+                     ?>
 
                     <?php
-                        $message = "";
-                        if($employe->etat == 0){
-                        $message = "Active";
+                    $message = "";
+                    if($employe->etat == 0){
+                        $message = $this->Html->image('icon/add.png');
+                        
                     }else{
-                    $message = "Désactive";
-                }
+                       $message = $this->Html->image('icon/desable.png'); 
+                    }
 
-                   echo   $this->Form->postLink(__( $message), ['action' => 'desable', $employe->id], ['confirm' => __('êtes-vous sur de desactive # {0}?', $employe->id)]) ?>
+                    echo   $this->Form->postLink(__( $message), ['action' => 'desable', $employe->id], ['confirm' => __('êtes-vous sur de desactive # {0}?', $employe->id),'escape'=>false]); 
+
+
+                    // echo $this->Html->link(
+                    //     '<i class="small material-icons">insert_chart</i>',
+                    //     "recipes/view/6",
+                    //     ['escape' => false]
+                    // );
+
+
+
+                    ?>
+                 
+
+
+
                 </td>
             </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-    <div class="paginator">
-        <ul class="pagination">
-            <?= $this->Paginator->first('<< ' . __('first')) ?>
-            <?= $this->Paginator->prev('< ' . __('previous')) ?>
-            <?= $this->Paginator->numbers() ?>
-            <?= $this->Paginator->next(__('next') . ' >') ?>
-            <?= $this->Paginator->last(__('last') . ' >>') ?>
-        </ul>
-        <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
-    </div>
+        <?php endforeach; ?>
+    </tbody>
+</table>
+<div class="paginator">
+    <ul class="pagination">
+        <?= $this->Paginator->first('<< ' . __('first')) ?>
+        <?= $this->Paginator->prev('< ' . __('previous')) ?>
+        <?= $this->Paginator->numbers() ?>
+        <?= $this->Paginator->next(__('next') . ' >') ?>
+        <?= $this->Paginator->last(__('last') . ' >>') ?>
+    </ul>
+    <p><?= $this->Paginator->counter(['format' => __('Page {{page}} of {{pages}}, showing {{current}} record(s) out of {{count}} total')]) ?></p>
+</div>
 </div>

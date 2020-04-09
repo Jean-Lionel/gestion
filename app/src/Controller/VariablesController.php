@@ -107,6 +107,7 @@ class VariablesController extends AppController
 
     public function search(){
        //$this->request->allowMethod('ajax');
+        $this->layout = 'ajax';
         $keyWord = $this->request->query('keyWord');
 
         $query = $this->Variables->find('all',

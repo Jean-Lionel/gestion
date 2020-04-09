@@ -1,3 +1,4 @@
+
 .disabled a,
 a.disabled {
     pointer-events: none;
@@ -91,7 +92,7 @@ ul.pagination li a {
     color: rgba(0, 0 ,0 , 0.54);
 }
 
-ul.pagination li.active a {
+ul.pagination li.active a ,.link-header{
     background-color: #DCE47E;
     color: #FFF;
     font-weight: bold;
